@@ -3,7 +3,7 @@
 A content-based recommendation system that suggests movies, TV shows, dramas, and anime using machine learning (TF-IDF + Cosine Similarity).
 
 ## Features
-- Combine two real-world datasets: **Netflix Originals** and **IMDB Top 1000**
+- Combine three real-world datasets: **Netflix Originals**, **IMDB Top 1000**, and a filtered **TMDB movie dataset**
 - Content-based recommendations using combined textual features (genre, language, duration, episodes, keywords, description, cast)
 - Interactive **Streamlit UI** with title selection, top-N slider, and source filters
 - Displays similarity scores, genre, rating, language, duration, episodes, and description for each recommendation
@@ -39,7 +39,7 @@ pip install -r requirements.txt
 ```bash
 python src/data_preprocessing.py
 ```
-This reads `NetflixOriginals.xlsx` and `imdb_top_1000.xlsx`, cleans them, engineers features, and saves `data/processed/entertainment_data.csv`.
+This reads `NetflixOriginals.xlsx`, `imdb_top_1000.xlsx`, and `TMDB_movie_dataset_v11.csv`, cleans them, engineers features, and saves `data/processed/entertainment_data.csv`.
 
 ### 3. Run the Streamlit app
 ```bash
@@ -47,7 +47,7 @@ streamlit run app.py
 ```
 
 ## How It Works
-1. **Feature Engineering** (`data_preprocessing.py`): Merges both datasets, normalizes columns, cleans text, and creates a `combined_features` string from genre, language, duration, episodes, keywords, description, and cast.
+1. **Feature Engineering** (`data_preprocessing.py`): Merges the source datasets, normalizes columns, cleans text, and creates a `combined_features` string from genre, language, duration, episodes, keywords, description, and cast.
 2. **Vectorization & Similarity** (`recommendation_engine.py`): Converts `combined_features` into TF-IDF vectors and computes pairwise cosine similarity.
 3. **Recommendations**: Given a title, the engine finds the most similar items by cosine similarity and returns them ranked.
 

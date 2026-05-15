@@ -5,6 +5,7 @@ Provides a recommend() function to fetch similar titles.
 """
 
 import os
+import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -13,14 +14,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 _df = None
 _vectorizer = None
 _tfidf_matrix = None
-_cosine_sim = None
 _indices = None
 _loaded_csv_path = None
 _loaded_csv_mtime = None
 
 
 def _load_data(processed_csv_path):
-    global _df, _vectorizer, _tfidf_matrix, _cosine_sim, _indices
+    global _df, _vectorizer, _tfidf_matrix, _indices
     global _loaded_csv_path, _loaded_csv_mtime
     if not os.path.exists(processed_csv_path):
         raise FileNotFoundError(f"Processed dataset not found at {processed_csv_path}")
@@ -43,7 +43,6 @@ def _load_data(processed_csv_path):
 
     _vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
     _tfidf_matrix = _vectorizer.fit_transform(_df["combined_features"])
-    _cosine_sim = cosine_similarity(_tfidf_matrix, _tfidf_matrix)
     _indices = pd.Series(_df.index, index=_df["title"]).to_dict()
     _loaded_csv_path = processed_csv_path
     _loaded_csv_mtime = csv_mtime
@@ -85,14 +84,19 @@ def recommend(title, top_n=5, processed_csv_path=None):
         return []
 
     idx = _indices[matched_title]
-    sim_scores = list(enumerate(_cosine_sim[idx]))
-    # Sort by similarity descending, exclude the item itself
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-    sim_scores = [s for s in sim_scores if s[0] != idx]
-    top_scores = sim_scores[:top_n]
+    sim_scores = cosine_similarity(_tfidf_matrix[idx], _tfidf_matrix).ravel()
+    sim_scores[idx] = -1.0
+
+    candidate_count = min(max(int(top_n), 0), len(sim_scores) - 1)
+    if candidate_count <= 0:
+        return []
+
+    top_indices = np.argpartition(sim_scores, -candidate_count)[-candidate_count:]
+    top_indices = top_indices[np.argsort(sim_scores[top_indices])[::-1]]
 
     results = []
-    for i, score in top_scores:
+    for i in top_indices:
+        score = sim_scores[i]
         row = _df.iloc[i]
         results.append({
             "title": row.get("title", ""),

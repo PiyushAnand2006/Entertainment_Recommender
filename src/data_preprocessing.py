@@ -1,6 +1,6 @@
 """
 Data Preprocessing Module
-Loads NetflixOriginals.xlsx and imdb_top_1000.xlsx,
+Loads NetflixOriginals.xlsx, imdb_top_1000.xlsx, and TMDB_movie_dataset_v11.csv,
 standardizes columns, cleans text, creates combined_features,
 and saves the processed dataset.
 """
@@ -35,6 +35,9 @@ IMDB_LANGUAGE_OVERRIDES = {
     "soorarai pottru": "tamil",
     "vikram vedha": "tamil",
 }
+
+TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500"
+TMDB_MIN_VOTE_COUNT = 200
 
 
 def clean_text(text):
@@ -100,18 +103,84 @@ def load_imdb(path):
     return df
 
 
-def preprocess_dataset(netflix_path, imdb_path, output_path):
+def load_tmdb(path, min_vote_count=TMDB_MIN_VOTE_COUNT):
+    df = pd.read_csv(path, low_memory=False)
+    df = df.rename(columns={
+        "title": "title",
+        "genres": "genre",
+        "overview": "description",
+        "runtime": "duration",
+        "vote_average": "rating",
+    })
+
+    status_mask = df.get("status", "").fillna("").astype(str).str.lower().eq("released")
+    adult_mask = df.get("adult", False).fillna(False).astype(str).str.lower().isin({"true", "1", "yes"})
+    df = df[status_mask & (~adult_mask)].copy()
+
+    df["vote_count"] = pd.to_numeric(df.get("vote_count"), errors="coerce").fillna(0)
+    df = df[df["vote_count"] >= min_vote_count].copy()
+
+    df["language"] = df.get("spoken_languages", "").fillna("").astype(str)
+    language_missing = df["language"].str.strip().eq("")
+    df.loc[language_missing, "language"] = df.loc[language_missing, "original_language"].fillna("").astype(str)
+
+    keyword_parts = []
+    for col in ["keywords", "tagline", "production_companies"]:
+        if col in df.columns:
+            keyword_parts.append(df[col].fillna("").astype(str))
+    if keyword_parts:
+        df["keywords"] = keyword_parts[0]
+        for part in keyword_parts[1:]:
+            df["keywords"] = df["keywords"] + " " + part
+    else:
+        df["keywords"] = ""
+
+    df["cast"] = ""
+    df["episodes"] = 1
+    df["source"] = "tmdb"
+    df["poster_url"] = df.get("poster_path", "").fillna("").astype(str).apply(
+        lambda path_value: f"{TMDB_POSTER_BASE_URL}{path_value}" if path_value.strip() else ""
+    )
+
+    title_series = df["title"].fillna("").astype(str)
+    genre_series = df["genre"].fillna("").astype(str)
+    description_series = df["description"].fillna("").astype(str)
+    keyword_series = df["keywords"].fillna("").astype(str)
+    has_signal = (
+        title_series.str.strip().ne("")
+        & (
+            genre_series.str.strip().ne("")
+            | description_series.str.strip().ne("")
+            | keyword_series.str.strip().ne("")
+        )
+    )
+    df = df[has_signal].copy()
+    df = df.sort_values(["vote_count", "rating", "popularity"], ascending=False, na_position="last")
+    return df
+
+
+def preprocess_dataset(netflix_path, imdb_path, output_path, tmdb_path=None):
     netflix = load_netflix(netflix_path)
     imdb = load_imdb(imdb_path)
+    tmdb = None
+    if tmdb_path and os.path.exists(tmdb_path):
+        tmdb = load_tmdb(tmdb_path)
+    elif tmdb_path:
+        print(f"TMDB dataset not found at {tmdb_path}; continuing without it.")
 
     # Keep only columns we need
     cols = ["title", "genre", "description", "language", "duration",
             "episodes", "rating", "cast", "keywords", "source", "poster_url"]
     netflix = netflix[[c for c in cols if c in netflix.columns]]
     imdb = imdb[[c for c in cols if c in imdb.columns]]
+    datasets = [imdb]
+    if tmdb is not None:
+        tmdb = tmdb[[c for c in cols if c in tmdb.columns]]
+        datasets.append(tmdb)
+    datasets.append(netflix)
 
-    # Combine (IMDB first so richer data with posters/ratings/cast is kept on duplicates)
-    combined = pd.concat([imdb, netflix], ignore_index=True)
+    # Combine in priority order so richer sources are kept on duplicate titles.
+    combined = pd.concat(datasets, ignore_index=True)
 
     # Clean text fields
     text_cols = ["title", "genre", "description", "language", "cast", "keywords"]
@@ -171,6 +240,7 @@ if __name__ == "__main__":
     BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     netflix_path = os.path.join(BASE, "data", "raw", "NetflixOriginals.xlsx")
     imdb_path = os.path.join(BASE, "data", "raw", "imdb_top_1000.xlsx")
+    tmdb_path = os.path.join(BASE, "data", "raw", "TMDB_movie_dataset_v11.csv")
     output_path = os.path.join(BASE, "data", "processed", "entertainment_data.csv")
 
     # Fallback to common absolute paths if raw folder doesn't exist
@@ -178,5 +248,7 @@ if __name__ == "__main__":
         netflix_path = r"C:\Users\thaku\NetflixOriginals.xlsx"
     if not os.path.exists(imdb_path):
         imdb_path = r"C:\Users\thaku\imdb_top_1000.xlsx"
+    if not os.path.exists(tmdb_path):
+        tmdb_path = r"C:\Users\thaku\Downloads\TMDB_movie_dataset_v11.csv"
 
-    preprocess_dataset(netflix_path, imdb_path, output_path)
+    preprocess_dataset(netflix_path, imdb_path, output_path, tmdb_path=tmdb_path)

@@ -159,7 +159,7 @@ def _render_card(i, row, show_similarity=True):
     if show_similarity and pd.notna(row.get("similarity_score")):
         score_html = f'<span class="score-pill">Similarity: {float(row["similarity_score"]):.3f}</span>'
     elif pd.notna(rating):
-        score_html = f'<span class="rating-pill">IMDb: {rating_str}</span>'
+        score_html = f'<span class="rating-pill">Rating: {rating_str}</span>'
 
     poster_raw = row.get("poster_url", "")
     poster = str(poster_raw).strip() if pd.notna(poster_raw) else ""
@@ -222,7 +222,7 @@ titles = sorted([t for t in _df["title"].dropna().unique().tolist() if str(t).st
 with st.sidebar:
     st.markdown("<h2 style='color:#f9fafb;'>Settings</h2>", unsafe_allow_html=True)
     selected_title = st.selectbox("Select a Title", titles, index=0)
-    top_n = st.slider("Number of Results", 1, 20, 5)
+    top_n = st.slider("Number of Results", 1, 999, 5)
 
     st.markdown("<hr style='border-color:#374151;'>", unsafe_allow_html=True)
     st.markdown("<h4 style='color:#f9fafb;'>Filters</h4>", unsafe_allow_html=True)

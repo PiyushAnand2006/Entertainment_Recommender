@@ -5,3 +5,4 @@ src/__pycache__/
 streamlit.log
 streamlit.err.log
 data/processed/__write_test.txt
+data/raw/
