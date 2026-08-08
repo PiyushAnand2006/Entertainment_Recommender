@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Entertainment Recommender</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+
+  <!-- PAGE 1: LANDING PAGE (SMART ENTERTAINMENT RECOMMENDER) -->
+  <div id="landing-page" class="page active">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="#landing-page" class="nav-brand">
+          <div class="logo-icon">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 2L4 8V24L16 30L28 24V8L16 2Z" stroke="url(#logo-grad)" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M11 12C11 10.3431 12.3431 9 14 9H18C19.6569 9 21 10.3431 21 12C21 13.6569 19.6569 15 18 15H14C12.3431 15 11 16.3431 11 18C11 19.6569 12.3431 21 14 21H18C19.6569 21 21 19.6569 21 18" stroke="url(#logo-grad2)" stroke-width="2.5" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="logo-grad" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#00F2FE"/>
+                  <stop offset="1" stop-color="#9D4EDD"/>
+                </linearGradient>
+                <linearGradient id="logo-grad2" x1="11" y1="9" x2="21" y2="21" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#3A7BD5"/>
+                  <stop offset="1" stop-color="#00F2FE"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="brand-title">
+            <span class="brand-line1">SMART</span>
+            <span class="brand-line2">ENTERTAINMENT</span>
+            <span class="brand-line3">RECOMMENDER</span>
+          </div>
+        </a>
+
+        <div class="nav-links">
+          <a href="#features-section" class="nav-link">FEATURES</a>
+          <a href="#how-it-works-section" class="nav-link">HOW IT WORKS</a>
+          <a href="#tech-stack-section" class="nav-link">TECH STACK</a>
+        </div>
+
+        <div class="nav-actions">
+          <button id="btn-get-started" class="btn btn-gradient nav-cta">GET STARTED</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-bg-glow"></div>
+      <div class="hero-container">
+        <div class="hero-content">
+          <h1 class="hero-title">
+            AI-POWERED<br>
+            MULTI-PLATFORM<br>
+            DISCOVERY
+          </h1>
+          <p class="hero-subtext">
+            Search and explore across Netflix, IMDB, TMDB, and more with one intelligent query.
+          </p>
+          <div class="hero-actions">
+            <button id="btn-hero-search" class="btn btn-gradient hero-cta">START YOUR UNIFIED SEARCH</button>
+          </div>
+        </div>
+
+        <!-- Futuristic Visual Canvas & Platform Cards -->
+        <div class="hero-visual">
+          <canvas id="light-trails-canvas"></canvas>
+          
+          <div class="visual-center-search">
+            <span class="search-placeholder-text">AI Search</span>
+            <svg class="search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+
+          <!-- Platform Floating Cards -->
+          <div class="platform-card card-netflix">
+            <div class="netflix-logo-text">N</div>
+          </div>
+
+          <div class="platform-card card-disney">
+            <div class="disney-logo-text">IMDb</div>
+          </div>
+
+          <div class="platform-card card-hbo">
+            <div class="hbo-logo-text">TMDB</div>
+          </div>
+
+          <div class="platform-card card-hulu">
+            <div class="hulu-logo-text">NETFLIX</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cross-Platform Trends Carousel -->
+    <section class="trends-section">
+      <div class="section-container">
+        <h2 class="section-title">CROSS-PLATFORM TRENDS</h2>
+        
+        <div class="carousel-wrapper">
+          <button class="carousel-arrow left-arrow" id="carousel-prev" aria-label="Previous">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          
+          <div class="carousel-track" id="trends-carousel">
+            <!-- Dynamic Movie Cards inserted via app.js -->
+            <div class="trend-card-skeleton"></div>
+            <div class="trend-card-skeleton"></div>
+            <div class="trend-card-skeleton"></div>
+            <div class="trend-card-skeleton"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Features -->
+    <section id="features-section" class="features-section">
+      <div class="section-container">
+        <h2 class="section-title">KEY FEATURES</h2>
+        <div class="features-grid">
+          <div class="glass-card feature-card">
+            <h3 class="feature-title">UNIFIED SEARCH<br>ENGINE</h3>
+            <p class="feature-desc">Combines data from major platforms for comprehensive analysis.</p>
+          </div>
+
+          <div class="glass-card feature-card">
+            <h3 class="feature-title">CROSS-PLATFORM<br>WISHLIST</h3>
+            <p class="feature-desc">Advanced matching using genre, language, duration, cast, and descriptions.</p>
+          </div>
+
+          <div class="glass-card feature-card">
+            <h3 class="feature-title">SMART<br>RECOMMENDATIONS</h3>
+            <p class="feature-desc">Refine your search with top-N sliders and customizable source filters.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section id="tech-stack-section" class="tech-stack-section">
+      <div class="section-container">
+        <h2 class="section-title">TECH STACK</h2>
+        <div class="tech-grid">
+          <div class="glass-card tech-card">
+            <div class="tech-icon-container">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 6 4 6 6V8H12V9H4C2 9 2 13 2 15C2 17 3.5 19 6 19H8V17C8 15 9.5 13 12 13H18C20 13 22 11.5 22 9V6C22 4 20 2 18 2H12ZM9.5 4.5C10.33 4.5 11 5.17 11 6C11 6.83 10.33 7.5 9.5 7.5C8.67 7.5 8 6.83 8 6C8 5.17 8.67 4.5 9.5 4.5Z" fill="#00F2FE"/>
+                <path d="M12 22C17.52 22 18 20 18 18V16H12V15H20C22 15 22 11 22 9C22 7 20.5 5 18 5H16V7C16 9 14.5 11 12 11H6C4 11 2 12.5 2 15V18C2 20 4 22 6 22H12ZM14.5 19.5C13.67 19.5 13 18.83 13 18C13 17.17 13.67 16.5 14.5 16.5C15.33 16.5 16 17.17 16 18C16 18.83 15.33 19.5 14.5 19.5Z" fill="#9D4EDD"/>
+              </svg>
+            </div>
+            <h3 class="tech-name">PYTHON</h3>
+          </div>
+
+          <div class="glass-card tech-card">
+            <div class="tech-icon-container">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="url(#tech-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0-1.32 4.24 3 3 0 0 0 .34 3.58 2.5 2.5 0 0 0 2.96 3.08A2.5 2.5 0 0 0 12 19.5"/>
+                <path d="M12 4.5a2.5 2.5 0 0 1 4.96-.46 2.5 2.5 0 0 1 1.98 3 2.5 2.5 0 0 1 1.32 4.24 3 3 0 0 1-.34 3.58 2.5 2.5 0 0 1-2.96 3.08A2.5 2.5 0 0 1 12 19.5"/>
+                <path d="M12 4.5v15"/>
+                <defs>
+                  <linearGradient id="tech-grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#00F2FE"/>
+                    <stop offset="1" stop-color="#9D4EDD"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <h3 class="tech-name">SCIKIT-LEARN</h3>
+          </div>
+
+          <div class="glass-card tech-card">
+            <div class="tech-icon-container">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 19L12 4L20 19H4Z" fill="url(#st-grad)" stroke="#00F2FE" stroke-width="1.5" stroke-linejoin="round"/>
+                <defs>
+                  <linearGradient id="st-grad" x1="4" y1="4" x2="20" y2="19" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#FF4B4B"/>
+                    <stop offset="1" stop-color="#9D4EDD"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <h3 class="tech-name">STREAMLIT</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-container">
+        <p class="copyright">&copy; 2024 Smart Entertainment Recommender. All rights reserved.</p>
+        <div class="social-links">
+          <a href="#" aria-label="Facebook">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="#" aria-label="X (Twitter)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" aria-label="LinkedIn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <a href="#" aria-label="YouTube">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="#0D111A"/></svg>
+          </a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- PAGE 2: DASHBOARD PAGE (UNIVERSAL HUB DASHBOARD - SCREEN 2) -->
+  <div id="dashboard-page" class="page">
+    <header class="dash-header">
+      <div class="dash-header-left">
+        <a href="#landing-page" id="btn-back-landing" class="dash-brand">
+          <div class="dash-logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <span class="dash-title">Universal Hub Dashboard</span>
+        </a>
+      </div>
+      <div class="dash-header-right">
+        <button id="btn-home-nav" class="dash-action-btn" title="Back to Home">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="dash-main-layout">
+      <!-- Left Sidebar Filters -->
+      <aside class="dash-sidebar">
+        <div class="sidebar-section">
+          <label class="sidebar-label" for="select-title-search">Select Movie / Title</label>
+          <div class="custom-select-wrapper">
+            <select id="select-title-search" class="dash-select">
+              <option value="">None (Browse by Genre/Filter)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <label class="sidebar-label" for="select-source">Source</label>
+          <div class="custom-select-wrapper">
+            <select id="select-source" class="dash-select">
+              <option value="all">All Platforms</option>
+              <option value="netflix">Netflix</option>
+              <option value="imdb">IMDB</option>
+              <option value="tmdb">TMDB</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <label class="sidebar-label" for="select-genre">Genre</label>
+          <div class="custom-select-wrapper">
+            <select id="select-genre" class="dash-select">
+              <option value="all">All</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <label class="sidebar-label" for="select-rating">Rating</label>
+          <div class="custom-select-wrapper">
+            <select id="select-rating" class="dash-select">
+              <option value="all">All</option>
+              <option value="8.5">8.5+ Top Rated</option>
+              <option value="8.0">8.0+ High Rating</option>
+              <option value="7.0">7.0+ Recommended</option>
+              <option value="6.0">6.0+ General</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <label class="sidebar-label" for="select-language">Language</label>
+          <div class="custom-select-wrapper">
+            <select id="select-language" class="dash-select">
+              <option value="all">All Languages</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <label class="sidebar-label" for="input-top-n">Top-N</label>
+          <input type="number" id="input-top-n" class="dash-input" value="10" min="1" max="100">
+        </div>
+
+        <button id="btn-run-recommendation" class="btn btn-cyan btn-full">Generate Recommendations</button>
+      </aside>
+
+      <!-- Center Main Content -->
+      <main class="dash-content">
+        <div class="platform-tabs-row">
+          <button class="platform-tab active" data-source="all">All Platforms</button>
+          <button class="platform-tab" data-source="netflix">Netflix</button>
+          <button class="platform-tab" data-source="imdb">IMDB</button>
+          <button class="platform-tab" data-source="tmdb">TMDB</button>
+        </div>
+
+        <div class="results-header-info">
+          <h3 id="query-movie-heading" class="results-title">Recommendations</h3>
+        </div>
+
+        <div id="recommendation-cards-grid" class="cards-grid">
+          <!-- Recommendation cards loaded dynamically -->
+        </div>
+      </main>
+
+      <!-- Right Panel: How It Works matching SCREEN 2 -->
+      <aside class="dash-right-panel">
+        <div class="glass-panel how-it-works-panel">
+          <h3 class="panel-title">How It Works</h3>
+          <p class="panel-intro">
+            An intelligent content-based recommendation system that analyzes text features across movie catalogs.
+          </p>
+
+          <ol class="steps-list">
+            <li>
+              <strong>1. Select a Title or Genre</strong>
+              <p>Choose a movie catalog entry or pick a specific genre to discover content.</p>
+            </li>
+            <li>
+              <strong>2. Analyze Content</strong>
+              <p>Extracts combined textual features: genres, keywords, cast, and overview descriptions.</p>
+            </li>
+            <li>
+              <strong>3. Calculate Similarity</strong>
+              <p>Transforms text into TF-IDF vectors and computes exact pairwise Cosine Similarity scores.</p>
+            </li>
+            <li>
+              <strong>4. Rank & Recommend</strong>
+              <p>Filters and orders top matching titles with precise similarity percentages.</p>
+            </li>
+          </ol>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Movie Detail Modal -->
+  <div id="movie-detail-modal" class="modal-overlay hidden">
+    <div class="modal-card glass-card">
+      <button id="btn-close-modal" class="modal-close-btn">&times;</button>
+      <div class="modal-body">
+        <div class="modal-poster-col">
+          <img id="modal-poster" src="" alt="Movie Poster">
+        </div>
+        <div class="modal-info-col">
+          <h2 id="modal-title" class="modal-title">Title</h2>
+          <div class="modal-chips" id="modal-chips"></div>
+          <p id="modal-desc" class="modal-desc">Description</p>
+          <div class="modal-sim-bar-wrapper">
+            <span id="modal-sim-text">95% Similarity</span>
+            <div class="sim-progress-bar"><div id="modal-sim-progress" class="sim-progress-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
