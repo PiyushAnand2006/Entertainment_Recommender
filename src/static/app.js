@@ -1,0 +1,466 @@
+/**
+ * Smart Entertainment Recommender - Application Client Script
+ * Controls Page Routing, Canvas Animations, API Integration, Carousel, and Modal Popups
+ * Handles Title Dropdown, Genre Dropdown, Source, Rating, and Language filters harmoniously.
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  // DOM Elements
+  const landingPage = document.getElementById('landing-page');
+  const dashboardPage = document.getElementById('dashboard-page');
+  const btnGetStarted = document.getElementById('btn-get-started');
+  const btnHeroSearch = document.getElementById('btn-hero-search');
+  const btnHomeNav = document.getElementById('btn-home-nav');
+  const btnBackLanding = document.getElementById('btn-back-landing');
+
+  const trendsCarousel = document.getElementById('trends-carousel');
+  const btnPrevCarousel = document.getElementById('carousel-prev');
+
+  const selectTitleSearch = document.getElementById('select-title-search');
+  const selectSource = document.getElementById('select-source');
+  const selectGenre = document.getElementById('select-genre');
+  const selectRating = document.getElementById('select-rating');
+  const selectLanguage = document.getElementById('select-language');
+  const inputTopN = document.getElementById('input-top-n');
+  const btnRunRec = document.getElementById('btn-run-recommendation');
+  const platformTabs = document.querySelectorAll('.platform-tab');
+  const cardsGrid = document.getElementById('recommendation-cards-grid');
+  const queryHeading = document.getElementById('query-movie-heading');
+
+  const modal = document.getElementById('movie-detail-modal');
+  const btnCloseModal = document.getElementById('btn-close-modal');
+
+  let allTitlesList = [];
+  let currentSourceFilter = 'all';
+
+  const DEFAULT_POSTER = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=60';
+  const API_BASE = '/api';
+
+  function getValidPosterUrl(url) {
+    if (!url || typeof url !== 'string') return DEFAULT_POSTER;
+    const trimmed = url.trim();
+    if (trimmed.toLowerCase().startsWith('http://') || trimmed.toLowerCase().startsWith('https://')) {
+      return trimmed;
+    }
+    return DEFAULT_POSTER;
+  }
+
+  // --------------------------------------------------------------------------
+  // PAGE NAVIGATION ROUTER
+  // --------------------------------------------------------------------------
+  function navigateTo(pageId) {
+    if (pageId === 'dashboard') {
+      landingPage.classList.remove('active');
+      dashboardPage.classList.add('active');
+      window.scrollTo(0, 0);
+      loadDashboardData();
+    } else {
+      dashboardPage.classList.remove('active');
+      landingPage.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+  }
+
+  btnGetStarted.addEventListener('click', () => navigateTo('dashboard'));
+  btnHeroSearch.addEventListener('click', () => navigateTo('dashboard'));
+  btnHomeNav.addEventListener('click', (e) => {
+    e.preventDefault();
+    navigateTo('landing');
+  });
+  btnBackLanding.addEventListener('click', (e) => {
+    e.preventDefault();
+    navigateTo('landing');
+  });
+
+  if (window.location.hash === '#dashboard') {
+    navigateTo('dashboard');
+  }
+
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('href').replace('#', '');
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // CANVAS LIGHT TRAILS ANIMATION (HERO VISUAL - SCREEN 1)
+  // --------------------------------------------------------------------------
+  function initLightTrailsCanvas() {
+    const canvas = document.getElementById('light-trails-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      if (canvas.parentElement) {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+      }
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const particles = [];
+    const particleCount = 40;
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 2 + 1,
+        speedX: (Math.random() - 0.5) * 1.6,
+        speedY: (Math.random() - 0.5) * 1.6,
+        color: Math.random() > 0.5 ? 'rgba(0, 242, 254, ' : 'rgba(157, 78, 221, ',
+        alpha: Math.random() * 0.6 + 0.2,
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const time = Date.now() * 0.0012;
+
+      ctx.save();
+      ctx.lineWidth = 1.5;
+
+      // Arc 1
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(0, 242, 254, ${0.25 + Math.sin(time) * 0.1})`;
+      ctx.moveTo(centerX, centerY);
+      ctx.quadraticCurveTo(centerX - 100, centerY - 60, 85, 75);
+      ctx.stroke();
+
+      // Arc 2
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(157, 78, 221, ${0.25 + Math.cos(time) * 0.1})`;
+      ctx.moveTo(centerX, centerY);
+      ctx.quadraticCurveTo(centerX + 100, centerY - 60, canvas.width - 85, 75);
+      ctx.stroke();
+
+      // Arc 3
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(157, 78, 221, ${0.25 + Math.sin(time * 1.3) * 0.1})`;
+      ctx.moveTo(centerX, centerY);
+      ctx.quadraticCurveTo(centerX - 100, centerY + 60, 85, canvas.height - 75);
+      ctx.stroke();
+
+      // Arc 4
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(0, 242, 254, ${0.25 + Math.cos(time * 1.3) * 0.1})`;
+      ctx.moveTo(centerX, centerY);
+      ctx.quadraticCurveTo(centerX + 100, centerY + 60, canvas.width - 85, canvas.height - 75);
+      ctx.stroke();
+
+      ctx.restore();
+
+      particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+
+        if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `${p.color}${p.alpha})`;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+  initLightTrailsCanvas();
+
+  // --------------------------------------------------------------------------
+  // CROSS-PLATFORM TRENDS CAROUSEL
+  // --------------------------------------------------------------------------
+  async function loadTrends() {
+    try {
+      const res = await fetch(`${API_BASE}/trends`);
+      const json = await res.json();
+      if (json.status === 'success' && json.data.length > 0) {
+        renderTrendsCarousel(json.data);
+      }
+    } catch (err) {
+      console.error('Failed to load trends:', err);
+    }
+  }
+
+  function renderTrendsCarousel(items) {
+    trendsCarousel.innerHTML = '';
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'trend-card';
+      const poster = getValidPosterUrl(item.poster_url);
+      const sourceUpper = (item.source || 'NETFLIX').toUpperCase();
+
+      card.innerHTML = `
+        <img src="${poster}" alt="${item.title}" class="trend-poster" loading="lazy" onerror="this.src='${DEFAULT_POSTER}'">
+        <div class="trend-overlay">
+          <h3 class="trend-title">${item.title}</h3>
+          <div class="trend-platforms">
+            <span class="platform-badge">${sourceUpper}</span>
+            <span class="platform-badge" style="background:rgba(0,242,254,0.25); color:#00F2FE;">★ ${item.rating || '8.5'}</span>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener('click', () => {
+        selectTitleSearch.value = item.title;
+        selectGenre.value = 'all';
+        navigateTo('dashboard');
+        fetchRecommendations();
+      });
+
+      trendsCarousel.appendChild(card);
+    });
+  }
+
+  btnPrevCarousel.addEventListener('click', () => {
+    trendsCarousel.scrollBy({ left: -260, behavior: 'smooth' });
+  });
+
+  loadTrends();
+
+  // --------------------------------------------------------------------------
+  // DASHBOARD DATA & METADATA
+  // --------------------------------------------------------------------------
+  async function loadDashboardData() {
+    if (allTitlesList.length === 0) {
+      try {
+        const res = await fetch(`${API_BASE}/meta`);
+        const json = await res.json();
+        if (json.status === 'success') {
+          allTitlesList = json.titles || [];
+          populateTitleDropdown(allTitlesList);
+          populateGenreDropdown(json.genres || []);
+          populateLanguageDropdown(json.languages || []);
+        }
+      } catch (err) {
+        console.error('Failed to load metadata:', err);
+      }
+    }
+    fetchRecommendations();
+  }
+
+  function populateTitleDropdown(titles) {
+    selectTitleSearch.innerHTML = '<option value="">None (Browse by Genre/Filter)</option>';
+
+    let defaultTitle = "The Godfather";
+
+    titles.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      if (t.toLowerCase() === defaultTitle.toLowerCase()) {
+        opt.selected = true;
+      }
+      selectTitleSearch.appendChild(opt);
+    });
+  }
+
+  function populateGenreDropdown(genres) {
+    selectGenre.innerHTML = '<option value="all">All Genres</option>';
+    genres.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g;
+      opt.textContent = g.charAt(0).toUpperCase() + g.slice(1);
+      selectGenre.appendChild(opt);
+    });
+  }
+
+  function populateLanguageDropdown(languages) {
+    selectLanguage.innerHTML = '<option value="all">All Languages</option>';
+    languages.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l;
+      opt.textContent = l.charAt(0).toUpperCase() + l.slice(1);
+      selectLanguage.appendChild(opt);
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // INTERLOCKING DROPDOWN EVENT LISTENERS
+  // Rule 1: Selecting a Genre sets Movie Title to "" (None)
+  // Rule 2: Selecting a Movie Title sets Genre to "all"
+  // --------------------------------------------------------------------------
+  selectGenre.addEventListener('change', () => {
+    if (selectGenre.value !== 'all') {
+      selectTitleSearch.value = '';
+    }
+    fetchRecommendations();
+  });
+
+  selectTitleSearch.addEventListener('change', () => {
+    if (selectTitleSearch.value !== '') {
+      selectGenre.value = 'all';
+    }
+    fetchRecommendations();
+  });
+
+  selectSource.addEventListener('change', () => {
+    currentSourceFilter = selectSource.value;
+    updatePlatformTabsActiveUI();
+    fetchRecommendations();
+  });
+
+  selectRating.addEventListener('change', () => fetchRecommendations());
+  selectLanguage.addEventListener('change', () => fetchRecommendations());
+  inputTopN.addEventListener('change', () => fetchRecommendations());
+  btnRunRec.addEventListener('click', () => fetchRecommendations());
+
+  // Platform Tabs
+  platformTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      currentSourceFilter = tab.dataset.source;
+      selectSource.value = currentSourceFilter;
+      updatePlatformTabsActiveUI();
+      fetchRecommendations();
+    });
+  });
+
+  function updatePlatformTabsActiveUI() {
+    platformTabs.forEach(t => {
+      if (t.dataset.source === currentSourceFilter) {
+        t.classList.add('active');
+      } else {
+        t.classList.remove('active');
+      }
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // FETCH RECOMMENDATIONS & RENDER CARDS
+  // --------------------------------------------------------------------------
+  async function fetchRecommendations() {
+    const selectedTitle = selectTitleSearch.value;
+    const selectedGenre = selectGenre.value;
+    const selectedRating = selectRating.value;
+    const selectedLanguage = selectLanguage.value;
+    const topN = parseInt(inputTopN.value, 10) || 10;
+    const source = currentSourceFilter;
+
+    cardsGrid.innerHTML = `
+      <div class="trend-card-skeleton" style="height:140px; grid-column: 1 / -1;"></div>
+      <div class="trend-card-skeleton" style="height:140px; grid-column: 1 / -1;"></div>
+    `;
+
+    try {
+      const params = new URLSearchParams({
+        title: selectedTitle,
+        genre: selectedGenre,
+        source: source,
+        rating: selectedRating,
+        language: selectedLanguage,
+        top_n: topN,
+      });
+
+      const res = await fetch(`${API_BASE}/recommend?${params.toString()}`);
+      const json = await res.json();
+
+      if (json.status === 'success') {
+        // Update header heading according to mode (Movie vs Genre vs All)
+        if (selectedTitle && selectedTitle !== 'none') {
+          queryHeading.innerHTML = `Recommendations for <span style="color:#00F2FE;">"${json.query_title || selectedTitle}"</span>`;
+        } else if (selectedGenre && selectedGenre !== 'all') {
+          const formattedGenre = selectedGenre.charAt(0).toUpperCase() + selectedGenre.slice(1);
+          const matchCount = json.total_matching !== undefined ? json.total_matching : json.recommendations.length;
+          queryHeading.innerHTML = `<span style="color:#10b981;">${matchCount} titles in <b>${formattedGenre}</b></span>`;
+        } else {
+          queryHeading.textContent = `All Top Recommended Titles`;
+        }
+
+        renderRecommendationCards(json.recommendations || [], json.mode);
+      }
+    } catch (err) {
+      console.error('Failed to fetch recommendations:', err);
+      cardsGrid.innerHTML = `<div style="color:var(--text-muted); padding:2rem;">Error fetching recommendations. Ensure backend server is active.</div>`;
+    }
+  }
+
+  function renderRecommendationCards(recs, mode) {
+    if (recs.length === 0) {
+      cardsGrid.innerHTML = `
+        <div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-card); border-radius:var(--radius-md);">
+          No matching recommendations found for the selected filters. Try adjusting your search or filter choices.
+        </div>
+      `;
+      return;
+    }
+
+    cardsGrid.innerHTML = '';
+    recs.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'recom-card';
+      const poster = getValidPosterUrl(item.poster_url);
+      const simPercent = item.similarity_percent || Math.round((item.similarity_score || 0.8) * 100);
+      const sourceUpper = (item.source || 'NETFLIX').toUpperCase();
+
+      const isGenreMode = (mode === 'genre') || (!selectTitleSearch.value);
+      const simLabel = isGenreMode && item.rating ? `★ ${item.rating} Rating` : `${simPercent}% Similarity`;
+
+      card.innerHTML = `
+        <div class="card-poster-col">
+          <img src="${poster}" alt="${item.title}" class="card-poster-img" loading="lazy" onerror="this.src='${DEFAULT_POSTER}'">
+          <div class="card-poster-badge">${sourceUpper}</div>
+        </div>
+        <div class="card-info-col">
+          <div>
+            <h4 class="card-movie-title">${item.title}</h4>
+            <p class="card-movie-desc">${item.description || 'A featured title matching textual features and similarity metrics.'}</p>
+            <div class="card-tags">
+              <span class="card-tag">${item.genre || 'Drama'}</span>
+              <span class="card-tag">${item.language || 'English'}</span>
+              <span class="card-tag">${item.duration ? item.duration + ' min' : 'Feature'}</span>
+            </div>
+          </div>
+          <div class="card-sim-section">
+            <div class="card-sim-label">${simLabel}</div>
+            <div class="sim-progress-bar">
+              <div class="sim-progress-fill" style="width: ${simPercent}%;"></div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener('click', () => openModal(item));
+      cardsGrid.appendChild(card);
+    });
+  }
+
+  // Modal logic
+  function openModal(item) {
+    const poster = getValidPosterUrl(item.poster_url);
+    const modalPosterEl = document.getElementById('modal-poster');
+    modalPosterEl.src = poster;
+    modalPosterEl.onerror = () => { modalPosterEl.src = DEFAULT_POSTER; };
+
+    document.getElementById('modal-title').textContent = item.title;
+    document.getElementById('modal-desc').textContent = item.description || 'Full movie overview and textual feature breakdown.';
+    const simPercent = item.similarity_percent || Math.round((item.similarity_score || 0.8) * 100);
+    document.getElementById('modal-sim-text').textContent = `${simPercent}% Cosine Similarity`;
+    document.getElementById('modal-sim-progress').style.width = `${simPercent}%`;
+
+    const chipsContainer = document.getElementById('modal-chips');
+    chipsContainer.innerHTML = `
+      <span class="card-tag">${item.genre || 'Drama'}</span>
+      <span class="card-tag">${(item.source || '').toUpperCase()}</span>
+      <span class="card-tag">${item.rating ? '★ ' + item.rating : 'Top Rated'}</span>
+      <span class="card-tag">${item.language || 'English'}</span>
+    `;
+
+    modal.classList.remove('hidden');
+  }
+
+  btnCloseModal.addEventListener('click', () => modal.classList.add('hidden'));
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.add('hidden');
+  });
+});
