@@ -275,19 +275,83 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchRecommendations();
   }
 
-  function populateTitleDropdown(titles) {
-    selectTitleSearch.innerHTML = '<option value="">None (Browse by Genre/Filter)</option>';
-    let defaultTitle = "The Godfather";
+  const suggestionsBox = document.getElementById('autocomplete-suggestions');
+  let selectedSuggestionIndex = -1;
 
-    titles.forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t;
-      opt.textContent = t;
-      if (t.toLowerCase() === defaultTitle.toLowerCase()) {
-        opt.selected = true;
+  function renderSuggestions(query) {
+    if (!suggestionsBox) return;
+    const cleanQuery = query.trim().toLowerCase();
+
+    if (!cleanQuery) {
+      suggestionsBox.classList.add('hidden');
+      suggestionsBox.innerHTML = '';
+      selectedSuggestionIndex = -1;
+      return;
+    }
+
+    const startsWithMatches = [];
+    const includesMatches = [];
+
+    for (let i = 0; i < allTitlesList.length; i++) {
+      const t = allTitlesList[i];
+      const tLower = t.toLowerCase();
+      if (tLower.startsWith(cleanQuery)) {
+        startsWithMatches.push(t);
+        if (startsWithMatches.length >= 35) break;
+      } else if (tLower.includes(cleanQuery)) {
+        if (startsWithMatches.length + includesMatches.length < 50) {
+          includesMatches.push(t);
+        }
       }
-      selectTitleSearch.appendChild(opt);
+    }
+
+    const matches = [...startsWithMatches, ...includesMatches].slice(0, 40);
+
+    if (matches.length === 0) {
+      suggestionsBox.innerHTML = `<div class="autocomplete-no-match">No movies matching "${query}"</div>`;
+      suggestionsBox.classList.remove('hidden');
+      selectedSuggestionIndex = -1;
+      return;
+    }
+
+    suggestionsBox.innerHTML = '';
+    selectedSuggestionIndex = -1;
+
+    matches.forEach((itemTitle, idx) => {
+      const div = document.createElement('div');
+      div.className = 'autocomplete-item';
+      div.dataset.index = idx;
+      div.dataset.title = itemTitle;
+
+      const matchIdx = itemTitle.toLowerCase().indexOf(cleanQuery);
+      if (matchIdx >= 0) {
+        const before = itemTitle.substring(0, matchIdx);
+        const matchText = itemTitle.substring(matchIdx, matchIdx + cleanQuery.length);
+        const after = itemTitle.substring(matchIdx + cleanQuery.length);
+        div.innerHTML = `${before}<span class="match-highlight">${matchText}</span>${after}`;
+      } else {
+        div.textContent = itemTitle;
+      }
+
+      div.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        selectTitleSearch.value = itemTitle;
+        selectGenre.value = 'all';
+        suggestionsBox.classList.add('hidden');
+        fetchRecommendations();
+      });
+
+      suggestionsBox.appendChild(div);
     });
+
+    suggestionsBox.classList.remove('hidden');
+  }
+
+  function populateTitleDropdown(titles) {
+    allTitlesList = titles || [];
+    if (!selectTitleSearch.value) {
+      selectTitleSearch.value = "The Godfather";
+    }
   }
 
   function populateGenreDropdown(genres) {
@@ -314,16 +378,69 @@ document.addEventListener('DOMContentLoaded', () => {
   selectGenre.addEventListener('change', () => {
     if (selectGenre.value !== 'all') {
       selectTitleSearch.value = '';
+      if (suggestionsBox) suggestionsBox.classList.add('hidden');
     }
     fetchRecommendations();
   });
 
-  selectTitleSearch.addEventListener('change', () => {
-    if (selectTitleSearch.value !== '') {
+  selectTitleSearch.addEventListener('input', (e) => {
+    const val = e.target.value;
+    if (val.trim() !== '') {
       selectGenre.value = 'all';
     }
+    renderSuggestions(val);
     fetchRecommendations();
   });
+
+  selectTitleSearch.addEventListener('focus', () => {
+    if (selectTitleSearch.value.trim() !== '') {
+      renderSuggestions(selectTitleSearch.value);
+    }
+  });
+
+  selectTitleSearch.addEventListener('blur', () => {
+    setTimeout(() => {
+      if (suggestionsBox) suggestionsBox.classList.add('hidden');
+    }, 200);
+  });
+
+  selectTitleSearch.addEventListener('keydown', (e) => {
+    if (!suggestionsBox || suggestionsBox.classList.contains('hidden')) return;
+    const items = suggestionsBox.querySelectorAll('.autocomplete-item');
+    if (items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedSuggestionIndex = (selectedSuggestionIndex + 1) % items.length;
+      updateActiveSuggestion(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedSuggestionIndex = (selectedSuggestionIndex - 1 + items.length) % items.length;
+      updateActiveSuggestion(items);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedSuggestionIndex >= 0 && items[selectedSuggestionIndex]) {
+        const title = items[selectedSuggestionIndex].dataset.title;
+        selectTitleSearch.value = title;
+        selectGenre.value = 'all';
+        suggestionsBox.classList.add('hidden');
+        fetchRecommendations();
+      }
+    } else if (e.key === 'Escape') {
+      suggestionsBox.classList.add('hidden');
+    }
+  });
+
+  function updateActiveSuggestion(items) {
+    items.forEach((item, idx) => {
+      if (idx === selectedSuggestionIndex) {
+        item.classList.add('active');
+        item.scrollIntoView({ block: 'nearest' });
+      } else {
+        item.classList.remove('active');
+      }
+    });
+  }
 
   selectSource.addEventListener('change', () => {
     currentSourceFilter = selectSource.value;

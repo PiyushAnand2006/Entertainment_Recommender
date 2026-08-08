@@ -248,10 +248,9 @@
       <aside class="dash-sidebar">
         <div class="sidebar-section">
           <label class="sidebar-label" for="select-title-search">Select Movie / Title</label>
-          <div class="custom-select-wrapper">
-            <select id="select-title-search" class="dash-select">
-              <option value="">None (Browse by Genre/Filter)</option>
-            </select>
+          <div class="custom-combobox-wrapper">
+            <input type="text" id="select-title-search" class="dash-select" placeholder="Type movie title (e.g. Godfather)..." value="The Godfather" autocomplete="off">
+            <div id="autocomplete-suggestions" class="autocomplete-suggestions-box hidden"></div>
           </div>
         </div>
 
