@@ -322,16 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
       div.className = 'autocomplete-item';
       div.dataset.index = idx;
       div.dataset.title = itemTitle;
-
-      const matchIdx = itemTitle.toLowerCase().indexOf(cleanQuery);
-      if (matchIdx >= 0) {
-        const before = itemTitle.substring(0, matchIdx);
-        const matchText = itemTitle.substring(matchIdx, matchIdx + cleanQuery.length);
-        const after = itemTitle.substring(matchIdx + cleanQuery.length);
-        div.innerHTML = `${before}<span class="match-highlight">${matchText}</span>${after}`;
-      } else {
-        div.textContent = itemTitle;
-      }
+      div.textContent = itemTitle;
 
       div.addEventListener('mousedown', (e) => {
         e.preventDefault();
