@@ -1,6 +1,11 @@
 # 🎬 Smart Entertainment Recommendation System
 
-A modern, high-performance **Multi-Platform Content-Based Recommendation Web Application** built with **Python**, **Flask**, **scikit-learn**, and **Streamlit**. It recommends movies, TV shows, and anime across **Netflix**, **IMDb**, and **TMDB** catalogs using **TF-IDF Text Vectorization** and **Cosine Similarity** on over **11,899+** real items.
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-GitHub_Pages-00F2FE?style=for-the-badge&logo=github)](https://piyushanand2006.github.io/Entertainment_Recommender/)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.0.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28.0-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
+
+> 🚀 **Live Web Application**: **[https://piyushanand2006.github.io/Entertainment_Recommender/](https://piyushanand2006.github.io/Entertainment_Recommender/)**
 
 ---
 
