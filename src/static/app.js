@@ -142,6 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const centerX = width * 0.5;
       const centerY = height * 0.5;
       ctx.clearRect(0, 0, width, height);
+      const cardAnchorX = width > 260 ? 130 : width * 0.5;
+      const cardAnchorY = height > 240 ? 120 : height * 0.27;
 
       const halo = ctx.createRadialGradient(centerX, centerY, 8, centerX, centerY, Math.min(width, height) * 0.55);
       halo.addColorStop(0, 'rgba(41, 228, 255, 0.18)');
@@ -153,8 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
       trails.forEach(trail => {
         const direction = trail.upper ? -1 : 1;
         const pulse = 0.8 + Math.sin(time * 1.35 + trail.phase) * 0.2;
-        const endX = centerX + trail.side * trail.spread;
-        const endY = centerY + direction * height * 0.66;
+        const endX = trail.side < 0 ? cardAnchorX : width - cardAnchorX;
+        const endY = trail.upper ? cardAnchorY : height - cardAnchorY;
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(centerX + trail.side * 8, centerY + direction * 4);
