@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --------------------------------------------------------------------------
-  // CANVAS LIGHT TRAILS ANIMATION
+  // CANVAS NEON X-BEAM CONNECTOR ANIMATION (EXACT MATCH TO REFERENCE IMAGE)
   // --------------------------------------------------------------------------
   function initLightTrailsCanvas() {
     const canvas = document.getElementById('light-trails-canvas');
@@ -97,8 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = canvas.getContext('2d');
     let width = 0;
     let height = 0;
-    let trails = [];
-    let sparks = [];
+    let stars = [];
 
     function resizeCanvas() {
       if (!canvas.parentElement) return;
@@ -108,29 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      buildLightTunnel();
+      buildStars();
     }
 
-    function buildLightTunnel() {
-      const colors = ['#32e7ff', '#19c9e5', '#8068ff', '#cb7bff'];
-      trails = Array.from({ length: 150 }, (_, index) => ({
-        upper: index % 2 === 0,
-        side: index % 4 < 2 ? -1 : 1,
-        spread: 48 + Math.random() * 185,
-        bend: 72 + Math.random() * 118,
-        color: colors[index % colors.length],
-        lineWidth: Math.random() < 0.18 ? 1.9 : 0.6 + Math.random() * 0.9,
-        opacity: 0.24 + Math.random() * 0.42,
-        phase: Math.random() * Math.PI * 2,
-      }));
-
-      sparks = Array.from({ length: 110 }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        radius: 0.7 + Math.random() * 1.8,
-        color: Math.random() > 0.5 ? '#20dbef' : '#a15cef',
-        alpha: 0.2 + Math.random() * 0.6,
-        phase: Math.random() * Math.PI * 2,
+    function buildStars() {
+      const palette = ['#00F2FE', '#00e5ff', '#38bdf8', '#c084fc', '#d946ef', '#2dd4bf', '#818cf8'];
+      stars = Array.from({ length: 45 }, () => ({
+        x: Math.random() * (width || 560),
+        y: Math.random() * (height || 440),
+        radius: 0.8 + Math.random() * 1.6,
+        color: palette[Math.floor(Math.random() * palette.length)],
+        baseAlpha: 0.25 + Math.random() * 0.55,
+        speed: 0.6 + Math.random() * 1.4,
+        phase: Math.random() * Math.PI * 2
       }));
     }
 
@@ -142,55 +131,87 @@ document.addEventListener('DOMContentLoaded', () => {
       const centerX = width * 0.5;
       const centerY = height * 0.5;
       ctx.clearRect(0, 0, width, height);
-      const cardAnchorX = width > 260 ? 130 : width * 0.5;
-      const cardAnchorY = height > 240 ? 120 : height * 0.27;
 
-      const halo = ctx.createRadialGradient(centerX, centerY, 8, centerX, centerY, Math.min(width, height) * 0.55);
-      halo.addColorStop(0, 'rgba(41, 228, 255, 0.18)');
-      halo.addColorStop(0.28, 'rgba(134, 92, 255, 0.10)');
-      halo.addColorStop(1, 'rgba(5, 10, 20, 0)');
-      ctx.fillStyle = halo;
+      // 4 Card Anchor centers
+      const tlX = 82;
+      const tlY = 72;
+      const trX = width - 82;
+      const trY = 72;
+      const blX = 82;
+      const blY = height - 72;
+      const brX = width - 82;
+      const brY = height - 72;
+
+      // Soft center cyan halo behind search bar
+      const centerHalo = ctx.createRadialGradient(centerX, centerY, 10, centerX, centerY, width * 0.42);
+      centerHalo.addColorStop(0, 'rgba(0, 242, 254, 0.16)');
+      centerHalo.addColorStop(0.5, 'rgba(0, 242, 254, 0.03)');
+      centerHalo.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = centerHalo;
       ctx.fillRect(0, 0, width, height);
 
-      trails.forEach(trail => {
-        const direction = trail.upper ? -1 : 1;
-        const pulse = 0.8 + Math.sin(time * 1.35 + trail.phase) * 0.2;
-        const endX = trail.side < 0 ? cardAnchorX : width - cardAnchorX;
-        const endY = trail.upper ? cardAnchorY : height - cardAnchorY;
+      // Draw subtle ambient space stars
+      stars.forEach(star => {
+        const pulse = 0.4 + Math.sin(time * star.speed + star.phase) * 0.4;
         ctx.save();
+        ctx.globalAlpha = star.baseAlpha * pulse;
+        ctx.fillStyle = star.color;
+        ctx.shadowColor = star.color;
+        ctx.shadowBlur = 6;
         ctx.beginPath();
-        ctx.moveTo(centerX + trail.side * 8, centerY + direction * 4);
-        ctx.bezierCurveTo(
-          centerX + trail.side * trail.spread * 0.12,
-          centerY + direction * (40 + trail.bend * 0.18),
-          centerX + trail.side * (trail.spread + trail.bend),
-          centerY + direction * height * 0.28,
-          endX,
-          endY
-        );
-        ctx.strokeStyle = trail.color;
-        ctx.globalAlpha = trail.opacity * pulse;
-        ctx.lineWidth = trail.lineWidth;
-        ctx.shadowColor = trail.color;
-        ctx.shadowBlur = trail.lineWidth > 1.3 ? 14 : 5;
-        ctx.stroke();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
       });
 
-      sparks.forEach(spark => {
+      // Draw 4 Sleek Neon Cyan Connector Beams ("X" cross from cards to center)
+      const beams = [
+        { x1: tlX, y1: tlY, x2: centerX, y2: centerY },
+        { x1: trX, y1: trY, x2: centerX, y2: centerY },
+        { x1: blX, y1: blY, x2: centerX, y2: centerY },
+        { x1: brX, y1: brY, x2: centerX, y2: centerY }
+      ];
+
+      const breath = 0.85 + Math.sin(time * 2) * 0.15;
+
+      beams.forEach(beam => {
         ctx.save();
-        ctx.globalAlpha = spark.alpha * (0.42 + Math.sin(time * 2 + spark.phase) * 0.35);
-        ctx.fillStyle = spark.color;
-        ctx.shadowColor = spark.color;
-        ctx.shadowBlur = 8;
         ctx.beginPath();
-        ctx.arc(spark.x, spark.y, spark.radius, 0, Math.PI * 2);
+        ctx.moveTo(beam.x1, beam.y1);
+        ctx.lineTo(beam.x2, beam.y2);
+        ctx.strokeStyle = '#00F2FE';
+        ctx.lineWidth = 1.8;
+        ctx.globalAlpha = 0.75 * breath;
+        ctx.shadowColor = '#00F2FE';
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.restore();
+
+        // Traveling glowing laser pulse
+        const progress = (time * 0.4 + (beam.x1 > centerX ? 0.5 : 0)) % 1;
+        const px = beam.x1 + (beam.x2 - beam.x1) * progress;
+        const py = beam.y1 + (beam.y2 - beam.y1) * progress;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = '#00F2FE';
+        ctx.shadowBlur = 12;
+        ctx.globalAlpha = 0.9;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#00F2FE';
+        ctx.globalAlpha = 0.4;
         ctx.fill();
         ctx.restore();
       });
 
       requestAnimationFrame(animate);
     }
+
     animate();
   }
   initLightTrailsCanvas();
@@ -533,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           const resCat = await fetch('data/catalog.json');
           catalogData = await resCat.json();
-        } catch (e) {}
+        } catch (e) { }
       }
       runStaticFallbackSearch(selectedTitle, selectedGenre, source, selectedRating, selectedLanguage, topN);
     }
