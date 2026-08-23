@@ -95,78 +95,96 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('light-trails-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    let width = 0;
+    let height = 0;
+    let trails = [];
+    let sparks = [];
 
     function resizeCanvas() {
-      if (canvas.parentElement) {
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
-      }
+      if (!canvas.parentElement) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = canvas.parentElement.clientWidth;
+      height = canvas.parentElement.clientHeight;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildLightTunnel();
     }
+
+    function buildLightTunnel() {
+      const colors = ['#32e7ff', '#19c9e5', '#8068ff', '#cb7bff'];
+      trails = Array.from({ length: 150 }, (_, index) => ({
+        upper: index % 2 === 0,
+        side: index % 4 < 2 ? -1 : 1,
+        spread: 48 + Math.random() * 185,
+        bend: 72 + Math.random() * 118,
+        color: colors[index % colors.length],
+        lineWidth: Math.random() < 0.18 ? 1.9 : 0.6 + Math.random() * 0.9,
+        opacity: 0.24 + Math.random() * 0.42,
+        phase: Math.random() * Math.PI * 2,
+      }));
+
+      sparks = Array.from({ length: 110 }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: 0.7 + Math.random() * 1.8,
+        color: Math.random() > 0.5 ? '#20dbef' : '#a15cef',
+        alpha: 0.2 + Math.random() * 0.6,
+        phase: Math.random() * Math.PI * 2,
+      }));
+    }
+
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    const particles = [];
-    const particleCount = 40;
-
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: Math.random() * 2 + 1,
-        speedX: (Math.random() - 0.5) * 1.6,
-        speedY: (Math.random() - 0.5) * 1.6,
-        color: Math.random() > 0.5 ? 'rgba(0, 242, 254, ' : 'rgba(157, 78, 221, ',
-        alpha: Math.random() * 0.6 + 0.2,
-      });
-    }
-
     function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const time = performance.now() * 0.001;
+      const centerX = width * 0.5;
+      const centerY = height * 0.5;
+      ctx.clearRect(0, 0, width, height);
 
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const time = Date.now() * 0.0012;
+      const halo = ctx.createRadialGradient(centerX, centerY, 8, centerX, centerY, Math.min(width, height) * 0.55);
+      halo.addColorStop(0, 'rgba(41, 228, 255, 0.18)');
+      halo.addColorStop(0.28, 'rgba(134, 92, 255, 0.10)');
+      halo.addColorStop(1, 'rgba(5, 10, 20, 0)');
+      ctx.fillStyle = halo;
+      ctx.fillRect(0, 0, width, height);
 
-      ctx.save();
-      ctx.lineWidth = 1.5;
-
-      ctx.beginPath();
-      ctx.strokeStyle = `rgba(0, 242, 254, ${0.25 + Math.sin(time) * 0.1})`;
-      ctx.moveTo(centerX, centerY);
-      ctx.quadraticCurveTo(centerX - 100, centerY - 60, 85, 75);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.strokeStyle = `rgba(157, 78, 221, ${0.25 + Math.cos(time) * 0.1})`;
-      ctx.moveTo(centerX, centerY);
-      ctx.quadraticCurveTo(centerX + 100, centerY - 60, canvas.width - 85, 75);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.strokeStyle = `rgba(157, 78, 221, ${0.25 + Math.sin(time * 1.3) * 0.1})`;
-      ctx.moveTo(centerX, centerY);
-      ctx.quadraticCurveTo(centerX - 100, centerY + 60, 85, canvas.height - 75);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.strokeStyle = `rgba(0, 242, 254, ${0.25 + Math.cos(time * 1.3) * 0.1})`;
-      ctx.moveTo(centerX, centerY);
-      ctx.quadraticCurveTo(centerX + 100, centerY + 60, canvas.width - 85, canvas.height - 75);
-      ctx.stroke();
-
-      ctx.restore();
-
-      particles.forEach(p => {
-        p.x += p.speedX;
-        p.y += p.speedY;
-
-        if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
-        if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
-
+      trails.forEach(trail => {
+        const direction = trail.upper ? -1 : 1;
+        const pulse = 0.8 + Math.sin(time * 1.35 + trail.phase) * 0.2;
+        const endX = centerX + trail.side * trail.spread;
+        const endY = centerY + direction * height * 0.66;
+        ctx.save();
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `${p.color}${p.alpha})`;
+        ctx.moveTo(centerX + trail.side * 8, centerY + direction * 4);
+        ctx.bezierCurveTo(
+          centerX + trail.side * trail.spread * 0.12,
+          centerY + direction * (40 + trail.bend * 0.18),
+          centerX + trail.side * (trail.spread + trail.bend),
+          centerY + direction * height * 0.28,
+          endX,
+          endY
+        );
+        ctx.strokeStyle = trail.color;
+        ctx.globalAlpha = trail.opacity * pulse;
+        ctx.lineWidth = trail.lineWidth;
+        ctx.shadowColor = trail.color;
+        ctx.shadowBlur = trail.lineWidth > 1.3 ? 14 : 5;
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      sparks.forEach(spark => {
+        ctx.save();
+        ctx.globalAlpha = spark.alpha * (0.42 + Math.sin(time * 2 + spark.phase) * 0.35);
+        ctx.fillStyle = spark.color;
+        ctx.shadowColor = spark.color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(spark.x, spark.y, spark.radius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
       });
 
       requestAnimationFrame(animate);
